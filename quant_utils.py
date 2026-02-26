@@ -100,3 +100,42 @@ def backtest_single_stock(df):
                     break   # 找到卖点后退出这笔交易
     return returns
 
+def filter_stock(stock_name):
+    stock_name["board"] = "其他"
+
+    stock_name.loc[
+    stock_name["code"].str.startswith(("60")),
+    "board"
+    ] = "沪主板"
+
+    stock_name.loc[
+    stock_name["code"].str.startswith(("00")),
+    "board"
+    ] = "深主板"
+
+    stock_name.loc[
+    stock_name["code"].str.startswith(("300","301","302")),
+    "board"
+    ] = "创业板"
+
+    #科创板股票代码以688为始，存托凭证代码以689为始
+    stock_name.loc[
+    stock_name["code"].str.startswith(("688","689")),
+    "board"
+    ] = "科创板"
+
+    stock_name.loc[
+    stock_name["code"].str.startswith(("920")), 
+    "board"] = "北交所"
+
+    # 找出未识别股票
+    unknown_stock = stock_name[stock_name["board"] == "其他"]
+
+    if not unknown_stock.empty:
+        print("警告：发现未识别板块的股票，请检查编码规则！")
+        print("未识别股票列表如下：")
+        print(unknown_stock[["code", "name"]].to_string(index=False))
+
+    return stock_name
+    
+def trend_stock(stock_name):
