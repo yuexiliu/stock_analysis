@@ -1,3 +1,11 @@
+import akshare as ak
+from datetime import datetime
+import pandas as pd
+
+#最低成交额（可设置）
+
+MIN_AMT = 2e8
+
 #中长线进场点；可随时修改纪律，扫描全市场的股票
 def midterm_entry_signal(df):
     df = df.copy()
@@ -137,5 +145,31 @@ def filter_stock(stock_name):
         print(unknown_stock[["code", "name"]].to_string(index=False))
 
     return stock_name
+
+#主板股票
+def filter_main_board(stock_name):
+    df = stock_name.copy()
+    df = df[df["board"].isin(["深主板", "沪主板"])]
+    return df
     
-def trend_stock(stock_name):
+#不要*ST和ST
+def filter_main_board_no_st(stock_name):
+    df = stock_name.copy()
+    df = df[df["board"].isin(["深主板", "沪主板"])]
+    df = df[~df["name"].str.contains("ST")]
+    return df
+
+def get_list_date_from_hist(stock):
+    today = datetime.today().strftime("%Y%m%d")
+    df = ak.stock_zh_a_hist(
+        symbol=stock,
+        start_date="19900101",
+        end_date= today,
+        adjust=""
+    )
+    if df.empty:
+        return None
+
+    return pd.to_datetime(df.iloc[0]['日期'])
+    
+
