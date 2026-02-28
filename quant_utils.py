@@ -173,3 +173,9 @@ def get_list_date_from_hist(stock):
     return pd.to_datetime(df.iloc[0]['日期'])
     
 
+def ts_code(stock_name):
+    df = stock_name.copy()
+    df["ts_code"] = df["code"].apply(
+        lambda x: f"{x}.SH" if x.startswith("60") else f"{x}.SZ"
+    )
+    return df
