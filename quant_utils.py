@@ -1,6 +1,8 @@
 import akshare as ak
 from datetime import datetime
 import pandas as pd
+from datetime import date
+today = date.today().strftime("%Y%m%d")
 
 #最低成交额（可设置）
 
@@ -173,9 +175,25 @@ def get_list_date_from_hist(stock):
     return pd.to_datetime(df.iloc[0]['日期'])
     
 
-def ts_code(stock_name):
+def add_ts_code(stock_name):
     df = stock_name.copy()
     df["ts_code"] = df["code"].apply(
         lambda x: f"{x}.SH" if x.startswith("60") else f"{x}.SZ"
     )
     return df
+
+def get_trade_dates(start_date="19901219", end_date= today):
+    """
+    用 AKShare 获取 A 股交易日历，返回 YYYYMMDD 字符串列表
+    """
+    cal = ak.tool_trade_date_hist_sina()
+    cal["trade_date"] = pd.to_datetime(cal["trade_date"], errors="coerce")
+    cal = cal.dropna(subset=["trade_date"])
+
+    start_dt = pd.to_datetime(start_date, format="%Y%m%d")
+    end_dt = pd.to_datetime(end_date, format="%Y%m%d")
+
+    cal = cal[(cal["trade_date"] >= start_dt) & (cal["trade_date"] <= end_dt)].copy()
+    cal = cal.sort_values("trade_date").reset_index(drop=True)
+
+    return cal["trade_date"].dt.strftime("%Y%m%d").tolist()
